@@ -1,0 +1,184 @@
+#!/usr/bin/env python3
+##
+## EPITECH PROJECT, 2019
+## 101pong
+## File description:
+## 
+##
+#!
+import math
+import pygame
+import random
+
+pygame.init()
+pygame.font.init()
+pygame.mixer.init()
+pygame.mixer.music.load("Tetris.ogg")
+pygame.mixer.music.play(-1,0.0)
+effect = pygame.mixer.Sound('pong.wav')
+
+window = pygame.display.set_mode((650, 450))
+pygame.display.set_caption("PONG")
+
+launch = 0
+rect1_x = 18
+rect1_y = 210
+rect2_x = 630
+rect2_y = 210
+rect_width = 5
+rect_height = 40
+rect_vel = 10
+circ_x = 325
+circ_y = 225
+circ_rad = 6
+circ_vel = 2
+start = 1
+nb_bounce = 0
+score1_int = 0
+score2_int = 0
+font = pygame.font.Font("ostrich-regular.ttf", 60)
+small_font = pygame.font.Font("ostrich-regular.ttf", 30)
+score1 = font.render(str(score1_int), True, (255, 255, 255))
+score2 = font.render(str(score2_int), True, (255, 255, 255))
+win1 = font.render("Winner", True, (255, 255, 255))
+win2 = font.render("Winner", True, (255, 255, 255))
+run = True
+
+while run:
+    pygame.time.delay(50)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+            
+    if launch == 0:
+        window.fill((0, 0, 0))
+        player1_menu = font.render("Player 1", True, (255, 255, 255))
+        player2_menu = font.render("PLayer 2", True, (255, 255, 255))
+        button1 = pygame.draw.rect(window, (0, 255, 0), (100, 260, 170, 40))
+        button2 = pygame.draw.rect(window, (255, 0, 0), (330, 260, 170, 40))
+        button_start = pygame.draw.rect(window, (0, 0, 255), (260, 10, 120, 60))
+        start_txt = font.render("START", True, (255, 255, 255))
+        player_name = small_font.render("Choose your name", True, (255, 255, 255))
+        window.blit(player1_menu, (105, 205))
+        window.blit(player2_menu, (335, 205))
+        window.blit(player_name, (105, 265))
+        window.blit(player_name, (335, 265))
+        window.blit(start_txt, (265, 15))
+        pygame.display.update()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_pos = event.pos
+            if button1.collidepoint(mouse_pos):
+                player1_str = str(input("Choose your name: "))
+                player1 = font.render(player1_str, True, (255, 255, 255))
+            if button2.collidepoint(mouse_pos):
+                player2_str = str(input("Choose your name: "))
+                player2 = font.render(player2_str, True, (255, 255, 255))
+            if button_start.collidepoint(mouse_pos):
+                launch = 1
+        pygame.display.update()
+
+    elif launch == 1:
+        if start == 1:
+            start = 0
+            move_x = [random.randint(2, 5), random.randint(-5, -2)]
+            move_y = [random.randint(2, 5), random.randint(-5, -2)]
+            move_x = random.choice(move_x)
+            move_y = random.choice(move_y)
+            circ_x += move_x
+            circ_y += move_y
+
+        if circ_y <= 6 or circ_y >= 444:
+            effect.play()
+            move_y *= -1
+
+        if circ_x >= 0 and circ_x <= rect1_x + circ_rad and circ_y >= rect1_y and circ_y <= rect1_y + 40:
+            move_x *= -1
+            nb_bounce += 1
+            effect.play()
+            if nb_bounce == 3:
+                circ_vel += 1
+                nb_bounce = 0
+        if circ_x >= rect2_x - circ_rad and circ_x <= 650 and circ_y >= rect2_y and circ_y <= rect2_y + 40:
+            move_x *= -1
+            nb_bounce += 1
+            effect.play()
+            if nb_bounce == 3:
+                circ_vel += 1
+                nb_bounce = 0
+
+        if circ_x <= 0:
+            score1_int += 1
+            circ_x = 325
+            circ_y = 225
+            move_x = random.randint(-5, -2)
+            move_y = [random.randint(2, 5), random.randint(-5, -2)]
+            move_y = random.choice(move_y)
+            circ_vel = 2
+
+        if circ_x >= 650:
+            score2_int += 1
+            circ_x = 325
+            circ_y = 225
+            move_x = random.randint(2, 5)
+            move_y = [random.randint(2, 5), random.randint(-5, -2)]
+            move_y = random.choice(move_y)
+            circ_vel = 2
+            
+        if score1_int == 10:
+            window.fill((0, 0, 0))
+            window.blit(win1, (250, 150))
+            window.blit(player2, (235, 200))
+            button = pygame.draw.rect(window, (0, 255, 0), (210, 335, 220, 65))
+            restart = font.render("Play Again", True, (255, 255, 255))
+            window.blit(restart, (225, 345))
+            pygame.display.update()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = event.pos
+                if button.collidepoint(mouse_pos):
+                    score1_int = 0
+                    score2_int = 0
+                    start = 1
+
+        elif score2_int == 10:
+            window.fill((0, 0, 0))
+            window.blit(win2, (250, 150))
+            window.blit(player1, (235, 200))
+            button = pygame.draw.rect(window, (0, 255, 0), (210, 335, 220, 65))
+            restart = font.render("Play Again", True, (255, 255, 255))
+            window.blit(restart, (225, 345))
+            pygame.display.update()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = event.pos
+                if button.collidepoint(mouse_pos):
+                    score1_int = 0
+                    score2_int = 0
+                    start = 1
+
+        else:
+            circ_x += move_x * circ_vel
+            circ_y += move_y * circ_vel
+
+            key = pygame.key.get_pressed()
+
+            if key[pygame.K_z] and rect1_y > 0:
+                rect1_y -= rect_vel
+            if key[pygame.K_s] and rect1_y < 410:
+                rect1_y += rect_vel
+            if key[pygame.K_UP] and rect2_y > 0:
+                rect2_y -= rect_vel
+            if key[pygame.K_DOWN] and rect2_y < 410:
+                rect2_y += rect_vel
+
+            window.fill((0, 0, 0))
+            score1 = font.render(str(score1_int), True, (255, 255, 255))
+            score2 = font.render(str(score2_int), True, (255, 255, 255))
+            window.blit(score1, (340, 10))
+            window.blit(score2, (295, 10))
+            pygame.draw.rect(window, (100, 100, 100), (325, 0, 1, 450))
+            pygame.draw.rect(window, (255, 255, 255), (rect1_x, rect1_y, rect_width, rect_height))
+            pygame.draw.rect(window, (255, 255, 255), (rect2_x, rect2_y, rect_width, rect_height))
+            pygame.draw.circle(window, (0, 255, 0), (circ_x, circ_y), (circ_rad))
+            pygame.display.update()
+
+pygame.quit()
